@@ -20,33 +20,28 @@ func NewInspector(collector certmetrics.Collector) *Inspector {
 	}
 }
 
-func (i *Inspector) InspectToken(token string) error {
-	return i.InspectNamedToken(func(claims map[string]interface{}) string {
-		sub, ok := claims["sub"]
-		if !ok {
-			return "unknown"
-		}
-		return sub.(string)
-	}, token)
-}
-
-func (i *Inspector) InspectNamedToken(subjectName func(claims map[string]interface{}) string, token string) error {
+func (i *Inspector) InspectToken(token string, opts ...InspectOption) error {
 	claims := jwt.MapClaims{}
 
-	parsed, _, err := (&jwt.Parser{}).ParseUnverified(token, &claims)
+	_, _, err := (&jwt.Parser{}).ParseUnverified(token, &claims)
 	if err != nil {
 		return fmt.Errorf("parse token: %w", err)
 	}
 
-	i.collector.StoreCert(i.cert(subjectName(claims), parsed, claims))
+	i.collector.StoreCert(i.cert(claims, opts))
 
 	return nil
 }
 
-func (i *Inspector) cert(subjectName string, _ *jwt.Token, claims jwt.MapClaims) *certmetrics.Cert {
+func (i *Inspector) cert(claims jwt.MapClaims, opts []InspectOption) *certmetrics.Cert {
 	cert := &certmetrics.Cert{
-		Type:    "jwt",
-		Subject: subjectName,
+		Type: "jwt",
+	}
+
+	if subjectName, ok := claims["sub"].(string); ok {
+		cert.Subject = subjectName
+	} else {
+		cert.Subject = "unknown"
 	}
 
 	if exp, ok := claims["exp"]; ok {
@@ -57,6 +52,10 @@ func (i *Inspector) cert(subjectName string, _ *jwt.Token, claims jwt.MapClaims)
 		cert.StartedAt = timeFromUnixString(startedAt)
 	} else if startedAt, ok = claims["iat"]; ok {
 		cert.StartedAt = timeFromUnixString(startedAt)
+	}
+
+	for _, opt := range opts {
+		opt.apply(claims, cert)
 	}
 
 	return cert

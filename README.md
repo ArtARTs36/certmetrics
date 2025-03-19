@@ -39,3 +39,32 @@ func main() {
 	x509m.InspectPEMs([]byte("pems"))
 }
 ```
+
+### Store with ID label 
+
+JWT
+
+```go
+package main
+
+import (
+	"github.com/artarts36/certmetrics/jwtm"
+)
+
+func main() {
+	jwtm.InspectToken("token", jwtm.WithID("super-token"))
+}
+
+```
+X509
+
+```go
+package main
+
+import "github.com/artarts36/certmetrics/x509m"
+
+func main() {
+	x509m.InspectPEMs([]byte("pems"), x509m.WithID("super-ca"))
+}
+```
+
