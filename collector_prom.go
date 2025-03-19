@@ -17,6 +17,7 @@ func NewPrometheusCollector(namespace string) *PrometheusCollector {
 			Namespace: namespace,
 			Help:      "Cert info",
 		}, []string{
+			"id",
 			"type",
 			"subject",
 			"started_at",
@@ -35,6 +36,7 @@ func (c *PrometheusCollector) Collect(metric chan<- prometheus.Metric) {
 
 func (c *PrometheusCollector) StoreCert(cert *Cert) {
 	c.certInfo.WithLabelValues(
+		cert.ID,
 		cert.Type,
 		cert.Subject,
 		cert.StartedAt.Format(time.DateTime),

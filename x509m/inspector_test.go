@@ -120,7 +120,7 @@ EYVMxjh8zNbFuoc7fzvvrFILLe7ifvEIUqSVIC/AzplM/Jxw7buXFeGP1qVCBEHq
 	for _, test := range tests {
 		t.Run(test.Title, func(t *testing.T) {
 			collector := certmetrics.NewMemoryCollector()
-			inspector := NewInspector(collector, nil)
+			inspector := NewInspector(collector)
 
 			inspector.InspectPEMs([]byte(test.Cert))
 

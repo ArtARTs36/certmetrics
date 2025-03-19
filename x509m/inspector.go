@@ -9,36 +9,16 @@ import (
 
 type Inspector struct {
 	collector certmetrics.Collector
-	cfg       *X509Config
-}
-
-type X509Config struct {
-	SubjectNamer func(cert *x509.Certificate) string
-}
-
-func setupX509Config(cfg *X509Config) *X509Config {
-	if cfg == nil {
-		cfg = &X509Config{}
-	}
-
-	if cfg.SubjectNamer == nil {
-		cfg.SubjectNamer = func(cert *x509.Certificate) string {
-			return cert.Subject.CommonName
-		}
-	}
-
-	return cfg
 }
 
 // NewInspector creates new instance of Inspector. cfg not required.
-func NewInspector(collector certmetrics.Collector, cfg *X509Config) *Inspector {
+func NewInspector(collector certmetrics.Collector) *Inspector {
 	return &Inspector{
 		collector: collector,
-		cfg:       setupX509Config(cfg),
 	}
 }
 
-func (i *Inspector) InspectPEMs(pemCerts []byte) {
+func (i *Inspector) InspectPEMs(pemCerts []byte, opts ...InspectOption) {
 	// based on: /go/src/crypto/x509/cert_pool.go:207
 
 	for len(pemCerts) > 0 {
@@ -57,15 +37,21 @@ func (i *Inspector) InspectPEMs(pemCerts []byte) {
 			continue
 		}
 
-		i.collector.StoreCert(i.cert(cert))
+		i.collector.StoreCert(i.cert(cert, opts))
 	}
 }
 
-func (i *Inspector) cert(cert *x509.Certificate) *certmetrics.Cert {
-	return &certmetrics.Cert{
+func (i *Inspector) cert(cert *x509.Certificate, opts []InspectOption) *certmetrics.Cert {
+	storing := &certmetrics.Cert{
 		Type:      "x509",
-		Subject:   i.cfg.SubjectNamer(cert),
+		Subject:   cert.Subject.CommonName,
 		StartedAt: cert.NotBefore,
 		ExpiredAt: cert.NotAfter,
 	}
+
+	for _, opt := range opts {
+		opt.apply(cert, storing)
+	}
+
+	return storing
 }
