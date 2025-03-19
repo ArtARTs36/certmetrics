@@ -6,8 +6,6 @@ import (
 
 var (
 	DefaultCollector = NewPrometheusCollector("go")
-	X509             = NewX509Inspector(DefaultCollector, nil)
-	JWT              = NewJWTInspector(DefaultCollector)
 )
 
 func Register() error {

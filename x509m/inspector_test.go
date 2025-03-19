@@ -1,9 +1,11 @@
-package certmetrics
+package x509m
 
 import (
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/artarts36/certmetrics"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -20,11 +22,11 @@ func TestX509Inspector(t *testing.T) {
 	tests := []struct {
 		Title    string
 		Cert     string
-		Expected []*Cert
+		Expected []*certmetrics.Cert
 	}{
 		{
 			Title: "RU CA Inspect PEMs",
-			Expected: []*Cert{
+			Expected: []*certmetrics.Cert{
 				{
 					Type:      "x509",
 					Subject:   "Russian Trusted Sub CA",
@@ -117,8 +119,8 @@ EYVMxjh8zNbFuoc7fzvvrFILLe7ifvEIUqSVIC/AzplM/Jxw7buXFeGP1qVCBEHq
 
 	for _, test := range tests {
 		t.Run(test.Title, func(t *testing.T) {
-			collector := NewMemoryCollector()
-			inspector := NewX509Inspector(collector, nil)
+			collector := certmetrics.NewMemoryCollector()
+			inspector := NewInspector(collector, nil)
 
 			inspector.InspectPEMs([]byte(test.Cert))
 

@@ -1,14 +1,14 @@
-package certmetrics
+package x509m
 
 import (
 	"crypto/x509"
 	"encoding/pem"
+
+	"github.com/artarts36/certmetrics"
 )
 
-type X509IssuerNamer func(cert *x509.Certificate) string
-
-type X509Inspector struct {
-	collector Collector
+type Inspector struct {
+	collector certmetrics.Collector
 	cfg       *X509Config
 }
 
@@ -30,14 +30,15 @@ func setupX509Config(cfg *X509Config) *X509Config {
 	return cfg
 }
 
-func NewX509Inspector(collector Collector, cfg *X509Config) *X509Inspector {
-	return &X509Inspector{
+// NewInspector creates new instance of Inspector. cfg not required.
+func NewInspector(collector certmetrics.Collector, cfg *X509Config) *Inspector {
+	return &Inspector{
 		collector: collector,
 		cfg:       setupX509Config(cfg),
 	}
 }
 
-func (i *X509Inspector) InspectPEMs(pemCerts []byte) {
+func (i *Inspector) InspectPEMs(pemCerts []byte) {
 	// based on: /go/src/crypto/x509/cert_pool.go:207
 
 	for len(pemCerts) > 0 {
@@ -60,8 +61,8 @@ func (i *X509Inspector) InspectPEMs(pemCerts []byte) {
 	}
 }
 
-func (i *X509Inspector) cert(cert *x509.Certificate) *Cert {
-	return &Cert{
+func (i *Inspector) cert(cert *x509.Certificate) *certmetrics.Cert {
+	return &certmetrics.Cert{
 		Type:      "x509",
 		Subject:   i.cfg.SubjectNamer(cert),
 		StartedAt: cert.NotBefore,

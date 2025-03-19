@@ -21,10 +21,10 @@ func main() {
 ```go
 package main
 
-import "github.com/artarts36/certmetrics"
+import "github.com/artarts36/certmetrics/jwtm"
 
 func main() {
-	certmetrics.JWT.InspectToken("jwt token")
+	jwtm.InspectToken("jwt token")
 }
 ```
 
@@ -33,9 +33,9 @@ func main() {
 ```go
 package main
 
-import "github.com/artarts36/certmetrics"
+import "github.com/artarts36/certmetrics/x509m"
 
 func main() {
-	certmetrics.X509.InspectPEMs([]byte("pems"))
+	x509m.InspectPEMs([]byte("pems"))
 }
 ```

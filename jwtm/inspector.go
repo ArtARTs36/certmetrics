@@ -1,4 +1,4 @@
-package certmetrics
+package jwtm
 
 import (
 	"fmt"
@@ -6,19 +6,21 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+
+	"github.com/artarts36/certmetrics"
 )
 
-type JWTInspector struct {
-	collector Collector
+type Inspector struct {
+	collector certmetrics.Collector
 }
 
-func NewJWTInspector(collector Collector) *JWTInspector {
-	return &JWTInspector{
+func NewInspector(collector certmetrics.Collector) *Inspector {
+	return &Inspector{
 		collector: collector,
 	}
 }
 
-func (i *JWTInspector) InspectToken(token string) error {
+func (i *Inspector) InspectToken(token string) error {
 	return i.InspectNamedToken(func(claims map[string]interface{}) string {
 		sub, ok := claims["sub"]
 		if !ok {
@@ -28,7 +30,7 @@ func (i *JWTInspector) InspectToken(token string) error {
 	}, token)
 }
 
-func (i *JWTInspector) InspectNamedToken(subjectName func(claims map[string]interface{}) string, token string) error {
+func (i *Inspector) InspectNamedToken(subjectName func(claims map[string]interface{}) string, token string) error {
 	claims := jwt.MapClaims{}
 
 	parsed, _, err := (&jwt.Parser{}).ParseUnverified(token, &claims)
@@ -41,8 +43,8 @@ func (i *JWTInspector) InspectNamedToken(subjectName func(claims map[string]inte
 	return nil
 }
 
-func (i *JWTInspector) cert(subjectName string, _ *jwt.Token, claims jwt.MapClaims) *Cert {
-	cert := &Cert{
+func (i *Inspector) cert(subjectName string, _ *jwt.Token, claims jwt.MapClaims) *certmetrics.Cert {
+	cert := &certmetrics.Cert{
 		Type:    "jwt",
 		Subject: subjectName,
 	}
