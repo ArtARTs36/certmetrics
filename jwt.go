@@ -2,9 +2,10 @@ package certmetrics
 
 import (
 	"fmt"
-	"github.com/golang-jwt/jwt"
 	"strconv"
 	"time"
+
+	"github.com/golang-jwt/jwt"
 )
 
 type JWTInspector struct {
@@ -60,7 +61,7 @@ func (i *JWTInspector) cert(subjectName string, _ *jwt.Token, claims jwt.MapClai
 }
 
 func timeFromUnixString(value interface{}) time.Time {
-	var unix int64 = 0
+	var unix int64
 
 	switch v := value.(type) {
 	case string:
