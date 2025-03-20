@@ -21,67 +21,22 @@ Use docker image `artarts36/certmetrics-exporter:v0.1.0`
 
 Run: `go get github.com/artarts36/certmetrics`
 
-Register default collectors with easy:
-
-```go
-package main
-
-import "github.com/artarts36/certmetrics"
-
-func main() {
-	certmetrics.Register()
-}
-```
-
-#### Store JWT Token
-
-```go
-package main
-
-import "github.com/artarts36/certmetrics/jwtm"
-
-func main() {
-	jwtm.InspectToken("jwt token")
-}
-```
-
-#### Store X509 Certificate
-
-```go
-package main
-
-import "github.com/artarts36/certmetrics/x509m"
-
-func main() {
-	x509m.InspectPEMs([]byte("pems"))
-}
-```
-
-#### Store with ID label 
-
-JWT
+1. Register default collectors
+2. Store certs and tokens.
 
 ```go
 package main
 
 import (
+	"github.com/artarts36/certmetrics"
 	"github.com/artarts36/certmetrics/jwtm"
+	"github.com/artarts36/certmetrics/x509m"
 )
 
 func main() {
+	certmetrics.Register()
+	
 	jwtm.InspectToken("token", jwtm.WithID("super-token"))
-}
-
-```
-X509
-
-```go
-package main
-
-import "github.com/artarts36/certmetrics/x509m"
-
-func main() {
 	x509m.InspectPEMs([]byte("pems"), x509m.WithID("super-ca"))
 }
 ```
-
