@@ -33,6 +33,10 @@ func (i *Inspector) InspectToken(token string, opts ...InspectOption) error {
 	return nil
 }
 
+func (i *Inspector) InspectClaims(claims map[string]interface{}, opts ...InspectOption) {
+	i.collector.StoreCert(i.cert(claims, opts))
+}
+
 func (i *Inspector) cert(claims jwt.MapClaims, opts []InspectOption) *certmetrics.Cert {
 	cert := &certmetrics.Cert{
 		Type: "jwt",

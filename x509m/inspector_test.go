@@ -18,7 +18,7 @@ func timeFromString(value string) time.Time {
 	return t
 }
 
-func TestX509Inspector(t *testing.T) {
+func TestInspector_InspectPEMs(t *testing.T) {
 	tests := []struct {
 		Title    string
 		Cert     string
