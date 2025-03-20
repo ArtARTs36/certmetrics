@@ -33,7 +33,13 @@ func NewApp(cfg *config.Config, info AppInfo) (*App, error) {
 		exporterMetrics: metrics.NewExporterMetrics("certmetrics_exporter"),
 	}
 
-	store := storage.NewLocal()
+	store := storage.Resolve(storage.NewResolver(
+		storage.NewLocal(),
+		map[string]storage.Storage{
+			"http://":  storage.NewHTTP(),
+			"https://": storage.NewHTTP(),
+		},
+	))
 
 	sc := map[string]scrappers.Scrapper{}
 

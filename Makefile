@@ -9,3 +9,5 @@ build-exporter:
 
 run-exporter:
 	docker run -v ./exporter:/app -p 8010:8010 artarts36/certmetrics-exporter:local
+
+check: test lint

@@ -18,8 +18,11 @@ scrape:
       - # Label to metric.
         #
         # Optional, default: ""
-        id: russian-ca
+        id: my-name
         # Path to file or regex.
         #
         # Required.
         path: ./*.pem
+
+      - id: super-name
+        path: https://gu-st.ru/content/Other/doc/russiantrustedca.pem

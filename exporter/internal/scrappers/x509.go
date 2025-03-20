@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"os"
 	"sync"
 
 	"github.com/artarts36/certmetrics/exporter/internal/storage"
@@ -32,9 +31,10 @@ func (x *X509Scrapper) Scrape(ctx context.Context, cfg *config.ScrapeConfig) err
 
 	go func() {
 		for file := range queue {
-			err := x.scrape(file)
+			err := x.scrape(ctx, file)
 			if err != nil {
 				slog.
+					With(slog.Any("err", err)).
 					With(slog.String("file.id", file.ID)).
 					With(slog.String("file.path", file.Path)).
 					ErrorContext(ctx, "[x509] failed to scrape file")
@@ -78,8 +78,8 @@ func (x *X509Scrapper) Scrape(ctx context.Context, cfg *config.ScrapeConfig) err
 	return nil
 }
 
-func (x *X509Scrapper) scrape(pem config.PEMFile) error {
-	file, err := os.ReadFile(pem.Path)
+func (x *X509Scrapper) scrape(ctx context.Context, pem config.PEMFile) error {
+	file, err := x.storage.ReadFile(ctx, pem.Path)
 	if err != nil {
 		return fmt.Errorf("read file: %w", err)
 	}
