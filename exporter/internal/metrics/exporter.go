@@ -3,11 +3,17 @@ package metrics
 import "github.com/prometheus/client_golang/prometheus"
 
 type ExporterMetrics struct {
+	info           *prometheus.GaugeVec
 	scrapingsTotal *prometheus.CounterVec
 }
 
 func NewExporterMetrics(namespace string) *ExporterMetrics {
 	return &ExporterMetrics{
+		info: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name:      "info",
+			Namespace: namespace,
+			Help:      "Exporter info",
+		}, []string{"version", "build_date"}),
 		scrapingsTotal: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Name:      "scrapings_total",
 			Namespace: namespace,
@@ -26,4 +32,8 @@ func (m *ExporterMetrics) Collect(metric chan<- prometheus.Metric) {
 
 func (m *ExporterMetrics) IncScrapings(id string) {
 	m.scrapingsTotal.WithLabelValues(id).Inc()
+}
+
+func (m *ExporterMetrics) SetInfo(version, buildDate string) {
+	m.info.WithLabelValues(version, buildDate).Set(1)
 }

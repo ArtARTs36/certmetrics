@@ -6,11 +6,11 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/artarts36/certmetrics"
-	"github.com/artarts36/certmetrics/exporter/internal/metrics"
 	"github.com/prometheus/client_golang/prometheus"
 
+	"github.com/artarts36/certmetrics"
 	"github.com/artarts36/certmetrics/exporter/internal/config"
+	"github.com/artarts36/certmetrics/exporter/internal/metrics"
 	"github.com/artarts36/certmetrics/exporter/internal/scrappers"
 )
 
@@ -21,7 +21,12 @@ type App struct {
 	exporterMetrics *metrics.ExporterMetrics
 }
 
-func NewApp(cfg *config.Config) (*App, error) {
+type AppInfo struct {
+	Version   string
+	BuildDate string
+}
+
+func NewApp(cfg *config.Config, info AppInfo) (*App, error) {
 	app := &App{
 		cfg:             cfg,
 		exporterMetrics: metrics.NewExporterMetrics("certmetrics_exporter"),
@@ -35,9 +40,11 @@ func NewApp(cfg *config.Config) (*App, error) {
 
 	app.scrapper = scrappers.Parallel(sc)
 
-	if err := app.setup(); err != nil {
-		return nil, fmt.Errorf("setup: %w", err)
+	if err := app.setupMetrics(); err != nil {
+		return nil, fmt.Errorf("setupMetrics: %w", err)
 	}
+
+	app.exporterMetrics.SetInfo(info.Version, info.BuildDate)
 
 	return app, nil
 }
@@ -51,7 +58,7 @@ func (app *App) Run(ctx context.Context) {
 	}
 }
 
-func (app *App) setup() error {
+func (app *App) setupMetrics() error {
 	certmetrics.DefaultCollector.As("exporter")
 
 	if err := certmetrics.Register(); err != nil {

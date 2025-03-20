@@ -16,6 +16,11 @@ import (
 	"github.com/artarts36/certmetrics/exporter/internal/config"
 )
 
+var (
+	Version   = "v0.1.0"
+	BuildDate = ""
+)
+
 const (
 	httpReadTimeout = 3 * time.Second
 	shutdownTimeout = 5 * time.Second
@@ -45,7 +50,10 @@ func main() {
 
 	slog.Info("initializing application")
 
-	app, err := internal.NewApp(cfg)
+	app, err := internal.NewApp(cfg, internal.AppInfo{
+		Version:   Version,
+		BuildDate: BuildDate,
+	})
 	if err != nil {
 		slog.
 			With(slog.Any("err", err)).
