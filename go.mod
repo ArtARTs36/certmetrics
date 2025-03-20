@@ -1,6 +1,6 @@
 module github.com/artarts36/certmetrics
 
-go 1.21.0
+go 1.22.0
 
 require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
