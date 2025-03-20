@@ -36,5 +36,7 @@ func (c *parallel) Scrape(ctx context.Context, cfg *config.Config) error {
 		}(name, scrapper)
 	}
 
+	wg.Wait()
+
 	return errors.Join(gerr...)
 }

@@ -1,12 +1,25 @@
 # certmetrics
 
-It's Go library for storing metrics(prometheus) about your X509 certificates or JWT tokens.
+It's Go library and exporter for storing metrics(prometheus) about your X509 certificates or JWT tokens.
 
 ```
-go_cert_info{expired_at="2027-03-06 11:25:19",id="russian-ca",started_at="2022-03-02 11:25:19",subject="Russian Trusted Sub CA",type="x509"} 1
-go_cert_info{expired_at="2032-02-27 21:04:15",id="russian-ca",started_at="2022-03-01 21:04:15",subject="Russian Trusted Root CA",type="x509"} 1
-go_cert_info{expired_at="<unknown>",id="gpt-token",started_at="2018-01-18 04:30:22",subject="1234567890",type="jwt"} 1
+certmetrics_cert_info{expired_at="2027-03-06 11:25:19",id="russian-ca",reporter="exporter",started_at="2022-03-02 11:25:19",subject="Russian Trusted Sub CA",type="x509"} 1
+certmetrics_cert_info{expired_at="2032-02-27 21:04:15",id="russian-ca",reporter="exporter",started_at="2022-03-01 21:04:15",subject="Russian Trusted Root CA",type="x509"} 1
+certmetrics_cert_info{expired_at="<unknown>",id="gpt-token",reporter="exporter",started_at="2018-01-18 04:30:22",subject="1234567890",type="jwt"} 1
 ```
+
+## Usage
+
+### 🐳 As exporter
+
+Use docker image `artarts36/certmetrics-exporter:v0.1.0`
+
+1. Copy [config](./exporter/certmetrics.yaml) as `certmetrics.yaml`
+2. Run `docker run -v ./certmetrics.yaml:/app/certmetrics.yaml -p 8010:8010 artarts36/certmetrics-exporter:v0.1.0`
+
+### 📚 As Go library
+
+Run: `go get github.com/artarts36/certmetrics`
 
 Register default collectors with easy:
 
@@ -20,9 +33,7 @@ func main() {
 }
 ```
 
-## Usage examples
-
-### Store JWT Token
+#### Store JWT Token
 
 ```go
 package main
@@ -34,7 +45,7 @@ func main() {
 }
 ```
 
-### Store X509 Certificate
+#### Store X509 Certificate
 
 ```go
 package main
@@ -46,7 +57,7 @@ func main() {
 }
 ```
 
-### Store with ID label 
+#### Store with ID label 
 
 JWT
 
