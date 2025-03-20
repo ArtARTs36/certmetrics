@@ -8,10 +8,12 @@ import (
 
 type PrometheusCollector struct {
 	certInfo *prometheus.GaugeVec
+	reporter string
 }
 
 func NewPrometheusCollector(namespace string) *PrometheusCollector {
 	return &PrometheusCollector{
+		reporter: "library",
 		certInfo: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name:      "cert_info",
 			Namespace: namespace,
@@ -22,8 +24,13 @@ func NewPrometheusCollector(namespace string) *PrometheusCollector {
 			"subject",
 			"started_at",
 			"expired_at",
+			"reporter",
 		}),
 	}
+}
+
+func (c *PrometheusCollector) As(reporterName string) {
+	c.reporter = reporterName
 }
 
 func (c *PrometheusCollector) Describe(desc chan<- *prometheus.Desc) {
@@ -51,5 +58,6 @@ func (c *PrometheusCollector) StoreCert(cert *Cert) {
 		cert.Subject,
 		startedAt,
 		expiredAt,
+		c.reporter,
 	).Set(1)
 }

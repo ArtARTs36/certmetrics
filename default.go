@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	DefaultCollector = NewPrometheusCollector("go")
+	DefaultCollector = NewPrometheusCollector("certmetrics")
 )
 
 func Register() error {

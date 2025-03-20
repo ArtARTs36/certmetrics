@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -11,12 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"gopkg.in/yaml.v3"
+	"github.com/artarts36/certmetrics/exporter/internal"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-
-	"github.com/artarts36/certmetrics"
-	"github.com/artarts36/certmetrics/x509m"
 )
 
 const (
@@ -24,33 +20,13 @@ const (
 	shutdownTimeout = 5 * time.Second
 )
 
-type Config struct {
-	HTTP struct {
-		Addr string `yaml:"addr"`
-	} `yaml:"http"`
-
-	Inspect struct {
-		Interval time.Duration `yaml:"interval"`
-
-		X509 struct {
-			// Paths to .pem
-			PEMs []PEMFile `yaml:"pems"`
-		} `yaml:"x509"`
-	} `yaml:"inspect"`
-}
-
-type PEMFile struct {
-	Path string `yaml:"path"`
-	ID   string `yaml:"id"`
-}
-
 func main() {
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelDebug,
 	})))
 
 	slog.Info("loading config")
-	cfg, err := loadConfig("certmetrics.yaml")
+	cfg, err := internal.LoadConfig("certmetrics.yaml")
 	if err != nil {
 		slog.
 			With(slog.Any("err", err)).
@@ -58,23 +34,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	slog.Info("registering metrics")
+	slog.Info("setup collector")
 
-	if err = certmetrics.Register(); err != nil {
+	if err = internal.SetupCollector(); err != nil {
 		slog.
 			With(slog.Any("err", err)).
-			Error("failed to register metrics")
+			Error("failed to setup collector")
 		os.Exit(1)
 	}
 
-	go func() {
-		collect(cfg)
-
-		t := time.NewTicker(cfg.Inspect.Interval)
-		for range t.C {
-			collect(cfg)
-		}
-	}()
+	go internal.Collect(cfg)
 
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
@@ -99,18 +68,6 @@ func main() {
 	slog.Info("http server closed")
 }
 
-func collect(cfg *Config) {
-	for i, pem := range cfg.Inspect.X509.PEMs {
-		err := inspectPem(pem)
-		if err != nil {
-			slog.
-				With(slog.Any("pem_id", i)).
-				With(slog.Any("err", err)).
-				Warn("[collect] failed to collect x509 certs")
-		}
-	}
-}
-
 func shutdown(s *http.Server) {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
@@ -129,30 +86,4 @@ func shutdown(s *http.Server) {
 			With(slog.Any("err", err.Error())).
 			Error("failed to shutdown http server")
 	}
-}
-
-func inspectPem(pem PEMFile) error {
-	file, err := os.ReadFile(pem.Path)
-	if err != nil {
-		return fmt.Errorf("read file: %w", err)
-	}
-
-	x509m.InspectPEMs(file, x509m.WithID(pem.ID))
-
-	return nil
-}
-
-func loadConfig(path string) (*Config, error) {
-	var cfg Config
-
-	content, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("read file: %w", err)
-	}
-
-	if err = yaml.Unmarshal(content, &cfg); err != nil {
-		return nil, fmt.Errorf("unmarshal yaml: %w", err)
-	}
-
-	return &cfg, nil
 }
