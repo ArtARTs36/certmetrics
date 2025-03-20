@@ -3,7 +3,9 @@ package scrappers
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
+	"sync"
 
 	"github.com/artarts36/certmetrics/exporter/internal/storage"
 
@@ -25,28 +27,53 @@ func NewX509Scrapper(metr *metrics.ExporterMetrics, store storage.Storage) *X509
 }
 
 func (x *X509Scrapper) Scrape(ctx context.Context, cfg *config.ScrapeConfig) error {
+	queue := make(chan config.PEMFile)
+	wg := &sync.WaitGroup{}
+
+	go func() {
+		for file := range queue {
+			err := x.scrape(file)
+			if err != nil {
+				slog.
+					With(slog.String("file.id", file.ID)).
+					With(slog.String("file.path", file.Path)).
+					ErrorContext(ctx, "[x509] failed to scrape file")
+			}
+			wg.Done()
+		}
+	}()
+
 	for _, pem := range cfg.X509.PEMs {
 		files, err := x.storage.ListFiles(ctx, pem.Path)
 		if err != nil {
-			return fmt.Errorf("list files in %q: %w", pem.Path, err)
+			slog.
+				With(slog.Any("err", err)).
+				With(slog.String("path", pem.Path)).
+				ErrorContext(ctx, "[x509] failed to list files")
+			continue
 		}
 
 		if len(files) == 0 {
-			return fmt.Errorf("files not found in %q", pem.Path)
+			slog.
+				With(slog.Any("err", err)).
+				With(slog.String("path", pem.Path)).
+				WarnContext(ctx, "[x509] files not found")
+			continue
 		}
 
+		wg.Add(len(files))
+
 		for _, file := range files {
-			fpem := config.PEMFile{
+			queue <- config.PEMFile{
 				Path: file,
 				ID:   pem.ID,
 			}
-
-			err = x.scrape(fpem)
-			if err != nil {
-				return fmt.Errorf("scrape file %q: %w", fpem.Path, err)
-			}
 		}
 	}
+
+	close(queue)
+
+	wg.Wait()
 
 	return nil
 }

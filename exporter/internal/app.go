@@ -75,6 +75,8 @@ func (app *App) setupMetrics() error {
 }
 
 func (app *App) scrape(ctx context.Context) {
+	slog.DebugContext(ctx, "[app] running scrappers")
+
 	err := app.scrapper.Scrape(ctx, &app.cfg.Scrape)
 	if err != nil {
 		slog.
