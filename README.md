@@ -12,10 +12,10 @@ certmetrics_cert_info{expired_at="<unknown>",id="gpt-token",reporter="exporter",
 
 ### 🐳 As exporter
 
-Use docker image `artarts36/certmetrics-exporter:v0.1.0`
+Use docker image `artarts36/certmetrics:v0.1.0`
 
 1. Copy [config](./exporter/certmetrics.yaml) as `certmetrics.yaml`
-2. Run `docker run -v ./certmetrics.yaml:/app/certmetrics.yaml -p 8010:8010 artarts36/certmetrics-exporter:v0.1.0`
+2. Run `docker run -v ./certmetrics.yaml:/app/certmetrics.yaml -p 8010:8010 artarts36/certmetrics:v0.1.0`
 
 ### 📚 As Go library
 
