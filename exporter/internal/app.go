@@ -12,6 +12,7 @@ import (
 	"github.com/artarts36/certmetrics/exporter/internal/config"
 	"github.com/artarts36/certmetrics/exporter/internal/metrics"
 	"github.com/artarts36/certmetrics/exporter/internal/scrappers"
+	"github.com/artarts36/certmetrics/exporter/internal/storage"
 )
 
 type App struct {
@@ -32,10 +33,12 @@ func NewApp(cfg *config.Config, info AppInfo) (*App, error) {
 		exporterMetrics: metrics.NewExporterMetrics("certmetrics_exporter"),
 	}
 
+	store := storage.NewLocal()
+
 	sc := map[string]scrappers.Scrapper{}
 
 	if len(cfg.Scrape.X509.PEMs) > 0 {
-		sc["x509"] = scrappers.NewX509Scrapper(app.exporterMetrics)
+		sc["x509"] = scrappers.NewX509Scrapper(app.exporterMetrics, store)
 	}
 
 	app.scrapper = scrappers.Parallel(sc)

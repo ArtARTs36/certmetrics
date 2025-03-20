@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/artarts36/certmetrics/exporter/internal/storage"
+
 	"github.com/artarts36/certmetrics/exporter/internal/config"
 	"github.com/artarts36/certmetrics/exporter/internal/metrics"
 	"github.com/artarts36/certmetrics/x509m"
@@ -12,19 +14,37 @@ import (
 
 type X509Scrapper struct {
 	metrics *metrics.ExporterMetrics
+	storage storage.Storage
 }
 
-func NewX509Scrapper(metr *metrics.ExporterMetrics) *X509Scrapper {
+func NewX509Scrapper(metr *metrics.ExporterMetrics, store storage.Storage) *X509Scrapper {
 	return &X509Scrapper{
 		metrics: metr,
+		storage: store,
 	}
 }
 
-func (x *X509Scrapper) Scrape(_ context.Context, cfg *config.Config) error {
-	for i, pem := range cfg.Scrape.X509.PEMs {
-		err := x.scrape(pem)
+func (x *X509Scrapper) Scrape(ctx context.Context, cfg *config.Config) error {
+	for _, pem := range cfg.Scrape.X509.PEMs {
+		files, err := x.storage.ListFiles(ctx, pem.Path)
 		if err != nil {
-			return fmt.Errorf("scrape file with index %d: %w", i, err)
+			return fmt.Errorf("list files in %q: %w", pem.Path, err)
+		}
+
+		if len(files) == 0 {
+			return fmt.Errorf("files not found in %q", pem.Path)
+		}
+
+		for _, file := range files {
+			fpem := config.PEMFile{
+				Path: file,
+				ID:   pem.ID,
+			}
+
+			err = x.scrape(fpem)
+			if err != nil {
+				return fmt.Errorf("scrape file %q: %w", fpem.Path, err)
+			}
 		}
 	}
 

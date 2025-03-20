@@ -16,4 +16,4 @@ scrape:
     # List of pem certificates.
     pems:
       - id: russian-ca
-        path: ./russiantrustedca.pem
+        path: ./*.pem
