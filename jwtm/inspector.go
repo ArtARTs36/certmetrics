@@ -42,8 +42,12 @@ func (i *Inspector) cert(claims jwt.MapClaims, opts []InspectOption) *certmetric
 		Type: "jwt",
 	}
 
-	if subjectName, ok := claims["sub"].(string); ok {
-		cert.Subject = subjectName
+	if subjectName, ok := claims["sub"]; ok {
+		if sn, snok := subjectName.(string); snok {
+			cert.Subject = sn
+		} else {
+			cert.Subject = "<invalid>"
+		}
 	} else {
 		cert.Subject = "unknown"
 	}

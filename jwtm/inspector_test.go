@@ -27,6 +27,17 @@ func TestJWTInspectorInspectToken(t *testing.T) {
 				},
 			},
 		},
+		{
+			Title: "invalid sub type",
+			Token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOlsxLDJdLCJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9.h7TvvcqBC1W6CD8wgf-ZvDxVFSmpsDasnh6o7rOXsQg", //nolint:lll
+			Expected: []*certmetrics.Cert{
+				{
+					Type:      "jwt",
+					Subject:   "<invalid>",
+					StartedAt: time.Unix(1516239022, 0),
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
