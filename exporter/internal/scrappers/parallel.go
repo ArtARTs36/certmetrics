@@ -19,7 +19,7 @@ func Parallel(scrappers map[string]Scrapper) Scrapper {
 	}
 }
 
-func (c *parallel) Scrape(ctx context.Context, cfg *config.Config) error {
+func (c *parallel) Scrape(ctx context.Context, cfg *config.ScrapeConfig) error {
 	wg := &sync.WaitGroup{}
 	gerr := []error{}
 

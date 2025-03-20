@@ -9,14 +9,16 @@ type Config struct {
 		Addr string `yaml:"addr"`
 	} `yaml:"http"`
 
-	Scrape struct {
-		Interval time.Duration `yaml:"interval"`
+	Scrape ScrapeConfig `yaml:"scrape"`
+}
 
-		X509 struct {
-			// Paths to .pem
-			PEMs []PEMFile `yaml:"pems"`
-		} `yaml:"x509"`
-	} `yaml:"scrape"`
+type ScrapeConfig struct {
+	Interval time.Duration `yaml:"interval"`
+
+	X509 struct {
+		// Paths to .pem
+		PEMs []PEMFile `yaml:"pems"`
+	} `yaml:"x509"`
 }
 
 type PEMFile struct {

@@ -26,9 +26,25 @@ func Load(path string) (*Config, error) {
 		cfg.HTTP.Addr = ":8010"
 	}
 
-	if cfg.Scrape.Interval == 0 {
+	if cfg.Scrape.Interval <= 0 {
 		cfg.Scrape.Interval = defaultInterval
 	}
 
+	if err = validate(&cfg); err != nil {
+		return nil, fmt.Errorf("validate: %w", err)
+	}
+
 	return &cfg, nil
+}
+
+func validate(cfg *Config) error {
+	if len(cfg.Scrape.X509.PEMs) > 0 {
+		for i, pem := range cfg.Scrape.X509.PEMs {
+			if pem.Path == "" {
+				return fmt.Errorf("scrape.x509.pems.%d.path required", i)
+			}
+		}
+	}
+
+	return nil
 }

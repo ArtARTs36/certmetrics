@@ -15,5 +15,11 @@ scrape:
   x509:
     # List of pem certificates.
     pems:
-      - id: russian-ca
+      - # Label to metric.
+        #
+        # Optional, default: ""
+        id: russian-ca
+        # Path to file or regex.
+        #
+        # Required.
         path: ./*.pem

@@ -7,5 +7,5 @@ import (
 )
 
 type Scrapper interface {
-	Scrape(ctx context.Context, cfg *config.Config) error
+	Scrape(ctx context.Context, cfg *config.ScrapeConfig) error
 }

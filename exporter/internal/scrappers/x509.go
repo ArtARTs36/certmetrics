@@ -24,8 +24,8 @@ func NewX509Scrapper(metr *metrics.ExporterMetrics, store storage.Storage) *X509
 	}
 }
 
-func (x *X509Scrapper) Scrape(ctx context.Context, cfg *config.Config) error {
-	for _, pem := range cfg.Scrape.X509.PEMs {
+func (x *X509Scrapper) Scrape(ctx context.Context, cfg *config.ScrapeConfig) error {
+	for _, pem := range cfg.X509.PEMs {
 		files, err := x.storage.ListFiles(ctx, pem.Path)
 		if err != nil {
 			return fmt.Errorf("list files in %q: %w", pem.Path, err)
