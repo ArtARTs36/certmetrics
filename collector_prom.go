@@ -35,11 +35,21 @@ func (c *PrometheusCollector) Collect(metric chan<- prometheus.Metric) {
 }
 
 func (c *PrometheusCollector) StoreCert(cert *Cert) {
+	startedAt := "<unknown>"
+	expiredAt := "<unknown>"
+
+	if !cert.StartedAt.IsZero() {
+		startedAt = cert.StartedAt.Format(time.DateTime)
+	}
+	if !cert.ExpiredAt.IsZero() {
+		expiredAt = cert.ExpiredAt.Format(time.DateTime)
+	}
+
 	c.certInfo.WithLabelValues(
 		cert.ID,
 		cert.Type,
 		cert.Subject,
-		cert.StartedAt.Format(time.DateTime),
-		cert.ExpiredAt.Format(time.DateTime),
+		startedAt,
+		expiredAt,
 	).Set(1)
 }

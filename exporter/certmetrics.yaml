@@ -1,0 +1,9 @@
+http:
+  addr: :8010
+
+inspect:
+  interval: 24h
+  x509:
+    pems:
+      - id: russian-ca
+        path: ./russiantrustedca.pem
