@@ -10,9 +10,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/artarts36/certmetrics/exporter/internal"
-
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+
+	"github.com/artarts36/certmetrics/exporter/internal"
+	"github.com/artarts36/certmetrics/exporter/internal/config"
 )
 
 const (
@@ -21,29 +22,38 @@ const (
 )
 
 func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	exit := func() {
+		cancel()
+		os.Exit(1)
+	}
+
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelDebug,
 	})))
 
 	slog.Info("loading config")
-	cfg, err := internal.LoadConfig("certmetrics.yaml")
+	cfg, err := config.Load("certmetrics.yaml")
 	if err != nil {
 		slog.
 			With(slog.Any("err", err)).
 			Error("failed to load config")
-		os.Exit(1)
+		exit()
 	}
 
-	slog.Info("setup collector")
+	slog.Info("initializing application")
 
-	if err = internal.SetupCollector(); err != nil {
+	app, err := internal.NewApp(cfg)
+	if err != nil {
 		slog.
 			With(slog.Any("err", err)).
-			Error("failed to setup collector")
-		os.Exit(1)
+			Error("failed to load config")
+		exit()
 	}
 
-	go internal.Collect(cfg)
+	go app.Run(ctx)
 
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
@@ -53,7 +63,7 @@ func main() {
 		Handler:           mux,
 		ReadHeaderTimeout: httpReadTimeout,
 	}
-	go shutdown(srv)
+	go shutdown(srv, cancel)
 
 	slog.
 		With(slog.String("addr", cfg.HTTP.Addr)).
@@ -68,7 +78,7 @@ func main() {
 	slog.Info("http server closed")
 }
 
-func shutdown(s *http.Server) {
+func shutdown(s *http.Server, cancel context.CancelFunc) {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	defer signal.Stop(ch)
@@ -78,12 +88,14 @@ func shutdown(s *http.Server) {
 		With(slog.String("signal", sig.String())).
 		Info("shutdown..")
 
-	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
-	defer cancel()
+	ctx, shCancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	defer shCancel()
 
 	if err := s.Shutdown(ctx); err != nil {
 		slog.
 			With(slog.Any("err", err.Error())).
 			Error("failed to shutdown http server")
 	}
+
+	cancel()
 }

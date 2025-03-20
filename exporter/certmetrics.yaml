@@ -1,9 +1,19 @@
+# HTTP Server Configuration.
 http:
+  # Address
+  #
+  # Default: :8010
   addr: :8010
 
-inspect:
+scrape:
+  # Interval for scrapping certs.
+  #
+  # Default: 24h.
   interval: 24h
+
+  # Configuration for scrapping of x509 certificates.
   x509:
+    # List of pem certificates.
     pems:
       - id: russian-ca
         path: ./russiantrustedca.pem
