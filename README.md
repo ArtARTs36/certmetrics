@@ -3,8 +3,14 @@
 It's Go library and exporter for storing metrics(prometheus) about your X509 certificates or JWT tokens.
 
 ```
-certmetrics_cert_info{expired_at="2027-03-06 11:25:19",id="russian-ca",reporter="exporter",started_at="2022-03-02 11:25:19",subject="Russian Trusted Sub CA",type="x509"} 1
-certmetrics_cert_info{expired_at="2032-02-27 21:04:15",id="russian-ca",reporter="exporter",started_at="2022-03-01 21:04:15",subject="Russian Trusted Root CA",type="x509"} 1
+# HELP certmetrics_cert_expiry_days Days until certificate expiry
+# TYPE certmetrics_cert_expiry_days gauge
+certmetrics_cert_expiry_days{id="my-name",subject="Russian Trusted Sub CA"} 1581
+certmetrics_cert_expiry_days{id="super-name",subject="Russian Trusted Sub CA"} 715
+# HELP certmetrics_cert_info Cert info
+# TYPE certmetrics_cert_info gauge
+certmetrics_cert_info{expired_at="2027-03-06 11:25:19",id="my-name",reporter="exporter",started_at="2022-03-02 11:25:19",subject="Russian Trusted Sub CA",type="x509"} 1
+certmetrics_cert_info{expired_at="2027-03-06 11:25:19",id="super-name",reporter="exporter",started_at="2022-03-02 11:25:19",subject="Russian Trusted Sub CA",type="x509"} 1
 certmetrics_cert_info{expired_at="<unknown>",id="gpt-token",reporter="exporter",started_at="2018-01-18 04:30:22",subject="1234567890",type="jwt"} 1
 ```
 
