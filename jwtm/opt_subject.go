@@ -12,7 +12,7 @@ func WithSubjectNameOf(namer func(claims map[string]interface{}) string) Inspect
 
 func WithoutSubjectName() InspectOption {
 	return WithSubjectNameOf(func(map[string]interface{}) string {
-		return "unknown"
+		return "<hidden>"
 	})
 }
 

@@ -38,6 +38,7 @@ func NewApp(cfg *config.Config, info AppInfo) (*App, error) {
 		map[string]storage.Storage{
 			"http://":  storage.NewHTTP(),
 			"https://": storage.NewHTTP(),
+			"env://":   storage.NewEnv(),
 		},
 	))
 
@@ -69,6 +70,7 @@ func (app *App) Run(ctx context.Context) {
 
 func (app *App) setupMetrics() error {
 	certmetrics.DefaultCollector.As("exporter")
+	certmetrics.DefaultCollector.WithExpiryDays()
 
 	if err := certmetrics.Register(); err != nil {
 		return fmt.Errorf("register metrics: %w", err)

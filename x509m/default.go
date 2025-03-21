@@ -4,6 +4,6 @@ import "github.com/artarts36/certmetrics"
 
 var defaultInspector = NewInspector(certmetrics.DefaultCollector)
 
-func InspectPEMs(pemCerts []byte, opts ...InspectOption) {
-	defaultInspector.InspectPEMs(pemCerts, opts...)
+func InspectPEMs(pemCerts []byte, opts ...InspectOption) error {
+	return defaultInspector.InspectPEMs(pemCerts, opts...)
 }

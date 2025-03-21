@@ -1,6 +1,7 @@
 package certmetrics
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -10,6 +11,7 @@ type PrometheusCollector struct {
 	certInfo       *prometheus.GaugeVec
 	certExpiryDays *prometheus.GaugeVec
 	reporter       string
+	expiryDays     bool
 }
 
 func NewPrometheusCollector(namespace string) *PrometheusCollector {
@@ -22,6 +24,7 @@ func NewPrometheusCollector(namespace string) *PrometheusCollector {
 		}, []string{
 			"id",
 			"subject",
+			"reporter",
 		}),
 		certInfo: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name:      "cert_info",
@@ -42,6 +45,10 @@ func (c *PrometheusCollector) As(reporterName string) {
 	c.reporter = reporterName
 }
 
+func (c *PrometheusCollector) WithExpiryDays() {
+	c.expiryDays = true
+}
+
 func (c *PrometheusCollector) Describe(desc chan<- *prometheus.Desc) {
 	c.certInfo.Describe(desc)
 	c.certExpiryDays.Describe(desc)
@@ -57,12 +64,14 @@ func (c *PrometheusCollector) StoreCert(cert *Cert) {
 	expiredAt := "<unknown>"
 
 	if !cert.StartedAt.IsZero() {
-		startedAt = cert.StartedAt.Format(time.DateTime)
+		startedAt = c.timeToLabel(cert.StartedAt)
 	}
 	if !cert.ExpiredAt.IsZero() {
-		expiredAt = cert.ExpiredAt.Format(time.DateTime)
+		expiredAt = c.timeToLabel(cert.ExpiredAt)
 
-		c.storeExpiryDays(cert)
+		if c.expiryDays {
+			c.storeExpiryDays(cert)
+		}
 	}
 
 	c.certInfo.WithLabelValues(
@@ -80,5 +89,9 @@ func (c *PrometheusCollector) storeExpiryDays(cert *Cert) {
 
 	days := int64(time.Until(cert.ExpiredAt).Hours() / dayHour)
 
-	c.certExpiryDays.WithLabelValues(cert.ID, cert.Subject).Set(float64(days))
+	c.certExpiryDays.WithLabelValues(cert.ID, cert.Subject, c.reporter).Set(float64(days))
+}
+
+func (c *PrometheusCollector) timeToLabel(t time.Time) string {
+	return fmt.Sprintf("%d", t.Unix())
 }

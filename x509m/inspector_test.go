@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/artarts36/certmetrics"
 
 	"github.com/stretchr/testify/assert"
@@ -122,7 +124,8 @@ EYVMxjh8zNbFuoc7fzvvrFILLe7ifvEIUqSVIC/AzplM/Jxw7buXFeGP1qVCBEHq
 			collector := certmetrics.NewMemoryCollector()
 			inspector := NewInspector(collector)
 
-			inspector.InspectPEMs([]byte(test.Cert))
+			err := inspector.InspectPEMs([]byte(test.Cert))
+			require.NoError(t, err)
 
 			assert.Equal(t, test.Expected, collector.Certs())
 		})

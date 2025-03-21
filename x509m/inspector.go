@@ -3,6 +3,7 @@ package x509m
 import (
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 
 	"github.com/artarts36/certmetrics"
 )
@@ -18,8 +19,13 @@ func NewInspector(collector certmetrics.Collector) *Inspector {
 	}
 }
 
-func (i *Inspector) InspectPEMs(pemCerts []byte, opts ...InspectOption) {
+func (i *Inspector) InspectPEMs(pemCerts []byte, opts ...InspectOption) error {
 	// based on: /go/src/crypto/x509/cert_pool.go:207
+	if len(pemCerts) == 0 {
+		return errors.New("certs is empty")
+	}
+
+	stored := false
 
 	for len(pemCerts) > 0 {
 		var block *pem.Block
@@ -34,11 +40,18 @@ func (i *Inspector) InspectPEMs(pemCerts []byte, opts ...InspectOption) {
 		certBytes := block.Bytes
 		cert, err := x509.ParseCertificate(certBytes)
 		if err != nil {
-			continue
+			return err
 		}
 
 		i.collector.StoreCert(i.cert(cert, opts))
+		stored = true
 	}
+
+	if !stored {
+		return errors.New("valid certs not found")
+	}
+
+	return nil
 }
 
 func (i *Inspector) cert(cert *x509.Certificate, opts []InspectOption) *certmetrics.Cert {

@@ -16,6 +16,12 @@ func WithSubjectNameOf(namer func(cert *x509.Certificate) string) InspectOption 
 	}
 }
 
+func WithoutSubjectName() InspectOption {
+	return WithSubjectNameOf(func(_ *x509.Certificate) string {
+		return "<hidden>"
+	})
+}
+
 func (o *subjectNameOption) apply(cert *x509.Certificate, storing *certmetrics.Cert) {
 	storing.Subject = o.namer(cert)
 }

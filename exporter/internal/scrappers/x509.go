@@ -67,6 +67,7 @@ func (x *X509Scrapper) Scrape(ctx context.Context, cfg *config.ScrapeConfig) err
 			queue <- config.PEMFile{
 				Path: file,
 				ID:   pem.ID,
+				Opts: pem.Opts,
 			}
 		}
 	}
@@ -89,7 +90,18 @@ func (x *X509Scrapper) scrape(ctx context.Context, pem config.PEMFile) error {
 		id = pem.Path
 	}
 
-	x509m.InspectPEMs(file, x509m.WithID(id))
+	opts := []x509m.InspectOption{
+		x509m.WithID(id),
+	}
+
+	if pem.Opts.Subject == config.PemSubjectNameOptNone {
+		opts = append(opts, x509m.WithoutSubjectName())
+	}
+
+	if err = x509m.InspectPEMs(file, opts...); err != nil {
+		return fmt.Errorf("inspect: %w", err)
+	}
+
 	x.metrics.IncScrapings(id)
 
 	return nil
