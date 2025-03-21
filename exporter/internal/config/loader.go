@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 	"time"
@@ -23,6 +24,17 @@ func Load(path string) (*Config, error) {
 		return nil, fmt.Errorf("unmarshal yaml: %w", err)
 	}
 
+	injectEnv(&cfg)
+	defaults(&cfg)
+
+	if err = validate(&cfg); err != nil {
+		return nil, fmt.Errorf("validate: %w", err)
+	}
+
+	return &cfg, nil
+}
+
+func defaults(cfg *Config) {
 	if cfg.HTTP.Addr == "" {
 		cfg.HTTP.Addr = ":8010"
 	}
@@ -30,16 +42,6 @@ func Load(path string) (*Config, error) {
 	if cfg.Scrape.Interval <= 0 {
 		cfg.Scrape.Interval = defaultInterval
 	}
-
-	if err = validate(&cfg); err != nil {
-		return nil, fmt.Errorf("validate: %w", err)
-	}
-
-	if err = injectEnv(&cfg); err != nil {
-		return nil, fmt.Errorf("inject enviornment variables: %w", err)
-	}
-
-	return &cfg, nil
 }
 
 func validate(cfg *Config) error {
@@ -60,28 +62,32 @@ func validate(cfg *Config) error {
 	return nil
 }
 
-func injectEnv(cfg *Config) error {
-	for i, pem := range cfg.Scrape.X509.PEMs {
-		if strings.HasPrefix(pem.Path, "$") {
-			varName := strings.TrimPrefix(pem.Path, "$")
-
-			if strings.HasPrefix(varName, "{") {
-				varName = strings.TrimPrefix(varName, "{")
-				varName = strings.TrimSuffix(varName, "}")
-			}
-
-			val, ok := os.LookupEnv(varName)
-			if ok {
-				return fmt.Errorf(
-					"scrape.x509.pems.%d.path: environment variable %q not found",
-					i,
-					varName,
-				)
-			}
-
-			pem.Path = val
-		}
+func injectEnv(cfg *Config) {
+	for _, pem := range cfg.Scrape.X509.PEMs {
+		pem.Path = interpolateEnv(pem.Path)
 	}
 
-	return nil
+	cfg.HTTP.Addr = interpolateEnv(cfg.HTTP.Addr)
+}
+
+func interpolateEnv(str string) string {
+	if !strings.HasPrefix(str, "$") {
+		return str
+	}
+
+	varName := strings.TrimPrefix(str, "$")
+
+	if strings.HasPrefix(varName, "{") {
+		varName = strings.TrimPrefix(varName, "{")
+		varName = strings.TrimSuffix(varName, "}")
+	}
+
+	val, ok := os.LookupEnv(varName)
+	if !ok {
+		slog.With(slog.String("var_name", varName)).Debug("[config] environment variable not found")
+
+		return ""
+	}
+
+	return val
 }

@@ -3,7 +3,7 @@ http:
   # Address
   #
   # Default: :8010
-  addr: :8010
+  addr: ${CERTMETRICS_HTTP_ADDR}
 
 scrape:
   # Interval for scrapping certs.
