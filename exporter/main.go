@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -40,7 +41,7 @@ func main() {
 	})))
 
 	slog.Info("loading config")
-	cfg, err := config.Load("certmetrics.yaml")
+	cfg, err := loadConfig()
 	if err != nil {
 		slog.
 			With(slog.Any("err", err)).
@@ -84,6 +85,21 @@ func main() {
 	}
 
 	slog.Info("http server closed")
+}
+
+func loadConfig() (*config.Config, error) {
+	if raw, ok := os.LookupEnv("CERTMETRICS_CONFIG"); ok {
+		slog.Debug("found CERTMETRICS_CONFIG")
+
+		return config.Parse([]byte(raw))
+	}
+
+	raw, err := os.ReadFile("certmetrics.yaml")
+	if err != nil {
+		return nil, fmt.Errorf("read file: %w", err)
+	}
+
+	return config.Parse(raw)
 }
 
 func shutdown(s *http.Server, cancel context.CancelFunc) {

@@ -12,22 +12,17 @@ import (
 
 const defaultInterval = 24 * time.Hour
 
-func Load(path string) (*Config, error) {
+func Parse(content []byte) (*Config, error) {
 	var cfg Config
 
-	content, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("read file: %w", err)
-	}
-
-	if err = yaml.Unmarshal(content, &cfg); err != nil {
+	if err := yaml.Unmarshal(content, &cfg); err != nil {
 		return nil, fmt.Errorf("unmarshal yaml: %w", err)
 	}
 
 	injectEnv(&cfg)
 	defaults(&cfg)
 
-	if err = validate(&cfg); err != nil {
+	if err := validate(&cfg); err != nil {
 		return nil, fmt.Errorf("validate: %w", err)
 	}
 
