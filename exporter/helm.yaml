@@ -1,0 +1,42 @@
+---
+{{- if .Values.observe_certs.enabled }}
+apiVersion: certmetrics/v1
+kind: Deployment
+metadata:
+spec:
+  replicas: 1
+  template:
+    spec:
+      {{- if .Values.observe_certs.updateStrategy }}
+      strategy: {{- toYaml .updateStrategy | nindent 4 }}
+      {{- else }}
+      strategy: RollingUpdate
+      {{- end }}
+      containers:
+        - name: certmetrics-exporter
+          image: artarts36/certmetrics:0.1.1
+          imagePullPolicy: ifNotPresent
+          ports:
+            {{- if .Values.observe_certs.config.http.addr }}
+            8010: '{{ trimPrefix ":" .Values.observe_certs.config.http.addr }}'
+            {{- else }}
+            8010: 8010
+            {{- end }}
+          env:
+            CERTMETRICS_CONFIG: '{{- toJson .Values.observe_certs.config }}'
+        {{- if or .Values.observe_certs.secretRef .Values.observe_certs.envFrom }}
+        envFrom:
+          {{- if and .Values.observe_certs.envFrom }}
+            {{- range .Values.observe_certs.envFrom }}
+            - configMapRef:
+                name: {{ . }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.observe_certs.secretRefs }}
+            {{- range .Values.observe_certs.secretRefs }}
+            - secretRef:
+                name: {{ . }}
+            {{- end }}
+            {{- end }}
+        {{- end }}
+{{- end }}
