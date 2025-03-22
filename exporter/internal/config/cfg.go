@@ -1,32 +1,28 @@
 package config
 
-import (
-	"time"
-)
-
 type Config struct {
 	HTTP struct {
-		Addr string `yaml:"addr"`
-	} `yaml:"http"`
+		Addr string `yaml:"addr" json:"addr"`
+	} `yaml:"http" json:"http"`
 
-	Scrape ScrapeConfig `yaml:"scrape"`
+	Scrape ScrapeConfig `yaml:"scrape" json:"scrape"`
 }
 
 type ScrapeConfig struct {
-	Interval time.Duration `yaml:"interval"`
+	Interval Duration `yaml:"interval" json:"interval"`
 
 	X509 struct {
 		// Paths to .pem
-		PEMs []PEMFile `yaml:"pems"`
-	} `yaml:"x509"`
+		PEMs []PEMFile `yaml:"pems" json:"pems"`
+	} `yaml:"x509" json:"x509"`
 }
 
 type PEMFile struct {
-	Path string `yaml:"path"`
-	ID   string `yaml:"id"`
+	Path string `yaml:"path" json:"path"`
+	ID   string `yaml:"id" json:"id"`
 	Opts struct {
-		Subject PemSubjectNameOpt `yaml:"subject"` // default: cn
-	} `yaml:"opts"`
+		Subject PemSubjectNameOpt `yaml:"subject" json:"subject"` // default: cn
+	} `yaml:"opts" json:"opts"`
 }
 
 type PemSubjectNameOpt string

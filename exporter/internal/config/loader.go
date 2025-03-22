@@ -1,6 +1,8 @@
 package config
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"os"
@@ -12,11 +14,27 @@ import (
 
 const defaultInterval = 24 * time.Hour
 
+func ParseAsJSON(content []byte) (*Config, error) {
+	return parse(content, json.Unmarshal)
+}
+
+func ParseAsYAML(content []byte) (*Config, error) {
+	return parse(content, yaml.Unmarshal)
+}
+
 func Parse(content []byte) (*Config, error) {
+	if bytes.HasPrefix(content, []byte{'{'}) {
+		return ParseAsJSON(content)
+	}
+
+	return ParseAsYAML(content)
+}
+
+func parse(content []byte, unmarshal func([]byte, any) error) (*Config, error) {
 	var cfg Config
 
-	if err := yaml.Unmarshal(content, &cfg); err != nil {
-		return nil, fmt.Errorf("unmarshal yaml: %w", err)
+	if err := unmarshal(content, &cfg); err != nil {
+		return nil, fmt.Errorf("unmarshal: %w", err)
 	}
 
 	injectEnv(&cfg)
@@ -34,8 +52,8 @@ func defaults(cfg *Config) {
 		cfg.HTTP.Addr = ":8010"
 	}
 
-	if cfg.Scrape.Interval <= 0 {
-		cfg.Scrape.Interval = defaultInterval
+	if cfg.Scrape.Interval.Duration <= 0 {
+		cfg.Scrape.Interval = Duration{defaultInterval}
 	}
 }
 

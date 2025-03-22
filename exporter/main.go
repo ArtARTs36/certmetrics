@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -25,6 +26,10 @@ var (
 const (
 	httpReadTimeout = 3 * time.Second
 	shutdownTimeout = 5 * time.Second
+)
+
+var (
+	configCandidates = []string{"cermetrics.yaml", "certmetrics.json"}
 )
 
 func main() {
@@ -94,9 +99,24 @@ func loadConfig() (*config.Config, error) {
 		return config.Parse([]byte(raw))
 	}
 
-	raw, err := os.ReadFile("certmetrics.yaml")
+	var raw []byte
+	var err error
+
+	for _, candidate := range configCandidates {
+		raw, err = os.ReadFile(candidate)
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				continue
+			}
+
+			return nil, fmt.Errorf("read file: %w", err)
+		}
+
+		slog.Debug(fmt.Sprintf("found %s", candidate))
+	}
+
 	if err != nil {
-		return nil, fmt.Errorf("read file: %w", err)
+		return nil, fmt.Errorf("config not found in: [%q]", strings.Join(configCandidates, ", "))
 	}
 
 	return config.Parse(raw)
