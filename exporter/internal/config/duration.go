@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -38,7 +39,12 @@ func (d *Duration) UnmarshalYAML(node *yaml.Node) error {
 
 	d.Duration, err = time.ParseDuration(node.Value)
 	if err != nil {
-		return err
+		val, terr := strconv.ParseFloat(node.Value, 64)
+		if terr != nil {
+			return fmt.Errorf("error parsing duration: [%w, %w]", terr, err)
+		}
+
+		d.Duration = time.Duration(val)
 	}
 
 	return nil
