@@ -1,0 +1,19 @@
+{
+  "http": {
+    "addr": ":8010"
+  },
+  "scrape": {
+    "interval": "24h",
+    "x509": {
+      "paths": [
+        {
+          "id": "aa",
+          "path": "./*.pem",
+          "opts": {
+            "subject": "none"
+          }
+        }
+      ]
+    }
+  }
+}
