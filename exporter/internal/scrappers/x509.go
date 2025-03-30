@@ -112,7 +112,6 @@ func (x *X509Scrapper) scrape(ctx context.Context, store storage.Storage, pem co
 		if terr := x509m.Inspect(file, opts...); terr != nil {
 			return fmt.Errorf("inspect: %w, inspest pems: %w", err, terr)
 		}
-		err = nil
 	}
 
 	x.metrics.IncScrapings(id)

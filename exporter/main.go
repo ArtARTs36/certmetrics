@@ -104,24 +104,17 @@ func loadConfig() (*config.Config, error) {
 
 	for _, candidate := range configCandidates {
 		raw, err = os.ReadFile(candidate)
-		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				continue
-			}
-
+		if errors.Is(err, os.ErrNotExist) {
+			continue
+		} else if err != nil {
 			return nil, fmt.Errorf("read file: %w", err)
-		} else {
-			slog.Debug(fmt.Sprintf("found %s", candidate))
-
-			break
 		}
+
+		slog.Debug(fmt.Sprintf("found %s", candidate))
+		return config.Parse(raw)
 	}
 
-	if len(raw) == 0 {
-		return nil, fmt.Errorf("config not found in: [%q]", strings.Join(configCandidates, ", "))
-	}
-
-	return config.Parse(raw)
+	return nil, fmt.Errorf("config not found in: [%q]", strings.Join(configCandidates, ", "))
 }
 
 func shutdown(s *http.Server, cancel context.CancelFunc) {

@@ -32,7 +32,7 @@ func (h *Domain) ListFiles(_ context.Context, path string) ([]string, error) {
 	newPath := fmt.Sprintf("%s:%s", uri.Host, port)
 
 	conn, err := tls.Dial("tcp", newPath, &tls.Config{
-		InsecureSkipVerify: true,
+		InsecureSkipVerify: true, //nolint: gosec // not need
 	})
 	if err != nil {
 		return nil, fmt.Errorf("tcp dial: %w", err)
@@ -40,10 +40,10 @@ func (h *Domain) ListFiles(_ context.Context, path string) ([]string, error) {
 
 	certs := conn.ConnectionState().PeerCertificates
 
-	paths := make([]string, len(h.certs))
+	paths := make([]string, len(certs))
 	for i, cert := range certs {
 		indexPath := fmt.Sprintf("%s#%d", path, i)
-		paths = append(paths, indexPath)
+		paths[i] = indexPath
 
 		h.certs[indexPath] = cert
 	}
