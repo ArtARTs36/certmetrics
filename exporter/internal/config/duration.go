@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"time"
 )
 
@@ -29,4 +30,15 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 	default:
 		return fmt.Errorf("unexpected type: %T", value)
 	}
+}
+
+func (d *Duration) UnmarshalYAML(node *yaml.Node) error {
+	var err error
+
+	d.Duration, err = time.ParseDuration(node.Value)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

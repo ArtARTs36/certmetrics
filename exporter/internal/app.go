@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"regexp"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -27,24 +28,44 @@ type AppInfo struct {
 	BuildDate string
 }
 
+var (
+	regexDomain = regexp.MustCompile(`^https:\/\/[a-zA-Z0-9-.]+$`)
+	regexHTTP   = regexp.MustCompile(`^http:\/\/`)
+	regexHTTPS  = regexp.MustCompile(`^https:\/\/(.*)/(.*)`)
+	regexENV    = regexp.MustCompile(`^env:\/\/`)
+)
+
 func NewApp(cfg *config.Config, info AppInfo) (*App, error) {
 	app := &App{
 		cfg:             cfg,
 		exporterMetrics: metrics.NewExporterMetrics("certmetrics_exporter"),
 	}
 
-	store := storage.Resolve(storage.NewResolver(
+	store := storage.NewResolver(
 		storage.NewLocal(),
-		map[string]storage.Storage{
-			"http://":  storage.NewHTTP(),
-			"https://": storage.NewHTTP(),
-			"env://":   storage.NewEnv(),
+		[]*storage.ResolveRule{
+			{
+				Regex:   regexDomain,
+				Storage: storage.NewDomain(),
+			},
+			{
+				Regex:   regexHTTP,
+				Storage: storage.NewHTTP(),
+			},
+			{
+				Regex:   regexHTTPS,
+				Storage: storage.NewHTTP(),
+			},
+			{
+				Regex:   regexENV,
+				Storage: storage.NewEnv(),
+			},
 		},
-	))
+	)
 
 	sc := map[string]scrappers.Scrapper{}
 
-	if len(cfg.Scrape.X509.PEMs) > 0 {
+	if len(cfg.Scrape.X509.Paths) > 0 {
 		sc["x509"] = scrappers.NewX509Scrapper(app.exporterMetrics, store)
 	}
 

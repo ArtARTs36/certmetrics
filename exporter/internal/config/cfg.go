@@ -13,11 +13,11 @@ type ScrapeConfig struct {
 
 	X509 struct {
 		// Paths to .pem
-		PEMs []PEMFile `yaml:"pems" json:"pems"`
+		Paths []X509File `yaml:"paths" json:"paths"`
 	} `yaml:"x509" json:"x509"`
 }
 
-type PEMFile struct {
+type X509File struct {
 	Path string `yaml:"path" json:"path"`
 	ID   string `yaml:"id" json:"id"`
 	Opts struct {

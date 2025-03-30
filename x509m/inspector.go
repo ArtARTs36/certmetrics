@@ -4,6 +4,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
+	"fmt"
 
 	"github.com/artarts36/certmetrics"
 )
@@ -17,6 +18,17 @@ func NewInspector(collector certmetrics.Collector) *Inspector {
 	return &Inspector{
 		collector: collector,
 	}
+}
+
+func (i *Inspector) Inspect(certBytes []byte, opts ...InspectOption) error {
+	cert, err := x509.ParseCertificate(certBytes)
+	if err != nil {
+		return fmt.Errorf("parse certificate: %w", err)
+	}
+
+	i.collector.StoreCert(i.cert(cert, opts))
+
+	return nil
 }
 
 func (i *Inspector) InspectPEMs(pemCerts []byte, opts ...InspectOption) error {

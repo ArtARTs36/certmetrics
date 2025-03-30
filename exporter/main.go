@@ -29,7 +29,7 @@ const (
 )
 
 var (
-	configCandidates = []string{"cermetrics.yaml", "certmetrics.json"}
+	configCandidates = []string{"certmetrics.yaml", "certmetrics.json"}
 )
 
 func main() {
@@ -110,12 +110,14 @@ func loadConfig() (*config.Config, error) {
 			}
 
 			return nil, fmt.Errorf("read file: %w", err)
-		}
+		} else {
+			slog.Debug(fmt.Sprintf("found %s", candidate))
 
-		slog.Debug(fmt.Sprintf("found %s", candidate))
+			break
+		}
 	}
 
-	if err != nil {
+	if len(raw) == 0 {
 		return nil, fmt.Errorf("config not found in: [%q]", strings.Join(configCandidates, ", "))
 	}
 
