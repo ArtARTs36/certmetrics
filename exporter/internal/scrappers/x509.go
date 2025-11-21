@@ -48,7 +48,7 @@ func (x *X509Scrapper) Scrape(ctx context.Context, cfg *config.ScrapeConfig) err
 		}
 	}()
 
-	for _, pem := range cfg.X509.Paths {
+	for _, pem := range cfg.X509.Files {
 		store := x.storageResolver.Resolve(pem.Path)
 
 		files, err := store.ListFiles(ctx, pem.Path)

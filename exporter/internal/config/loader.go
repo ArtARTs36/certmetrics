@@ -58,7 +58,7 @@ func defaults(cfg *Config) {
 }
 
 func validate(cfg *Config) error {
-	for i, pem := range cfg.Scrape.X509.Paths {
+	for i, pem := range cfg.Scrape.X509.Files {
 		if pem.Path == "" {
 			return fmt.Errorf("scrape.x509.pems.%d.path required", i)
 		}
@@ -76,7 +76,7 @@ func validate(cfg *Config) error {
 }
 
 func injectEnv(cfg *Config) {
-	for _, pem := range cfg.Scrape.X509.Paths {
+	for _, pem := range cfg.Scrape.X509.Files {
 		pem.Path = interpolateEnv(pem.Path)
 	}
 

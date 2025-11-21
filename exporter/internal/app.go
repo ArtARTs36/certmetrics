@@ -65,7 +65,7 @@ func NewApp(cfg *config.Config, info AppInfo) (*App, error) {
 
 	sc := map[string]scrappers.Scrapper{}
 
-	if len(cfg.Scrape.X509.Paths) > 0 {
+	if len(cfg.Scrape.X509.Files) > 0 {
 		sc["x509"] = scrappers.NewX509Scrapper(app.exporterMetrics, store)
 	}
 

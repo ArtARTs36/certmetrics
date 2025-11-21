@@ -14,8 +14,7 @@ type ScrapeConfig struct {
 	Interval specw.Duration `yaml:"interval" json:"interval"`
 
 	X509 struct {
-		// Paths to .pem
-		Paths []X509File `yaml:"paths" json:"paths"`
+		Files []X509File `yaml:"files" json:"files"`
 	} `yaml:"x509" json:"x509"`
 }
 

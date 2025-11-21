@@ -13,8 +13,8 @@ scrape:
 
   # Configuration for scrapping of x509 certificates.
   x509:
-    # List of paths to certificates.
-    paths:
+    # List files of certificates.
+    files:
       - # Label to metric.
         #
         # Optional, default: ""
