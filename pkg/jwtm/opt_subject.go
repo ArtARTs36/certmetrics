@@ -1,6 +1,8 @@
 package jwtm
 
-import "github.com/artarts36/certmetrics"
+import (
+	"github.com/artarts36/certmetrics/pkg/collector"
+)
 
 type subjectFuncOpt struct {
 	namer func(map[string]interface{}) string
@@ -16,6 +18,6 @@ func WithoutSubjectName() InspectOption {
 	})
 }
 
-func (o *subjectFuncOpt) apply(claims map[string]interface{}, storing *certmetrics.Cert) {
+func (o *subjectFuncOpt) apply(claims map[string]interface{}, storing *collector.Cert) {
 	storing.Subject = o.namer(claims)
 }

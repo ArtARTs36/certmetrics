@@ -1,7 +1,7 @@
 package jwtm
 
 import (
-	"github.com/artarts36/certmetrics"
+	"github.com/artarts36/certmetrics/pkg/collector"
 )
 
 type idInspectOption struct {
@@ -14,6 +14,6 @@ func WithID(id string) InspectOption {
 	}
 }
 
-func (o *idInspectOption) apply(_ map[string]interface{}, storing *certmetrics.Cert) {
+func (o *idInspectOption) apply(_ map[string]interface{}, storing *collector.Cert) {
 	storing.ID = o.id
 }

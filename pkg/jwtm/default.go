@@ -1,8 +1,10 @@
 package jwtm
 
-import "github.com/artarts36/certmetrics"
+import (
+	"github.com/artarts36/certmetrics/pkg/collector"
+)
 
-var defaultInspector = NewInspector(certmetrics.DefaultCollector)
+var defaultInspector = NewInspector(collector.DefaultCollector)
 
 func InspectToken(token string, opts ...InspectOption) error {
 	return defaultInspector.InspectToken(token, opts...)
