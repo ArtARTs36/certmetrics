@@ -6,15 +6,15 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/artarts36/certmetrics"
+	"github.com/artarts36/certmetrics/pkg/collector"
 )
 
 type Inspector struct {
-	collector certmetrics.Collector
+	collector collector.Collector
 }
 
 // NewInspector creates new instance of Inspector. cfg not required.
-func NewInspector(collector certmetrics.Collector) *Inspector {
+func NewInspector(collector collector.Collector) *Inspector {
 	return &Inspector{
 		collector: collector,
 	}
@@ -66,8 +66,8 @@ func (i *Inspector) InspectPEMs(pemCerts []byte, opts ...InspectOption) error {
 	return nil
 }
 
-func (i *Inspector) cert(cert *x509.Certificate, opts []InspectOption) *certmetrics.Cert {
-	storing := &certmetrics.Cert{
+func (i *Inspector) cert(cert *x509.Certificate, opts []InspectOption) *collector.Cert {
+	storing := &collector.Cert{
 		Type:      "x509",
 		Subject:   cert.Subject.CommonName,
 		StartedAt: cert.NotBefore,

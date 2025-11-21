@@ -3,17 +3,17 @@ package internal
 import (
 	"context"
 	"fmt"
+	"github.com/artarts36/certmetrics/pkg/collector"
 	"log/slog"
 	"regexp"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/artarts36/certmetrics"
-	"github.com/artarts36/certmetrics/exporter/internal/config"
-	"github.com/artarts36/certmetrics/exporter/internal/metrics"
-	"github.com/artarts36/certmetrics/exporter/internal/scrappers"
-	"github.com/artarts36/certmetrics/exporter/internal/storage"
+	"github.com/artarts36/certmetrics/internal/config"
+	"github.com/artarts36/certmetrics/internal/metrics"
+	"github.com/artarts36/certmetrics/internal/scrappers"
+	"github.com/artarts36/certmetrics/internal/storage"
 )
 
 type App struct {
@@ -90,10 +90,10 @@ func (app *App) Run(ctx context.Context) {
 }
 
 func (app *App) setupMetrics() error {
-	certmetrics.DefaultCollector.As("exporter")
-	certmetrics.DefaultCollector.WithExpiryDays()
+	collector.DefaultCollector.As("exporter")
+	collector.DefaultCollector.WithExpiryDays()
 
-	if err := certmetrics.Register(); err != nil {
+	if err := collector.Register(); err != nil {
 		return fmt.Errorf("register metrics: %w", err)
 	}
 	if err := prometheus.Register(app.exporterMetrics); err != nil {

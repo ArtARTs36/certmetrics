@@ -1,4 +1,4 @@
-package certmetrics
+package collector
 
 import "time"
 

@@ -3,7 +3,7 @@ package x509m
 import (
 	"crypto/x509"
 
-	"github.com/artarts36/certmetrics"
+	"github.com/artarts36/certmetrics/pkg/collector"
 )
 
 type idInspectOption struct {
@@ -16,6 +16,6 @@ func WithID(id string) InspectOption {
 	}
 }
 
-func (o *idInspectOption) apply(_ *x509.Certificate, storing *certmetrics.Cert) {
+func (o *idInspectOption) apply(_ *x509.Certificate, storing *collector.Cert) {
 	storing.ID = o.id
 }

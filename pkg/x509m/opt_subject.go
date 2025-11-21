@@ -2,8 +2,7 @@ package x509m
 
 import (
 	"crypto/x509"
-
-	"github.com/artarts36/certmetrics"
+	"github.com/artarts36/certmetrics/pkg/collector"
 )
 
 type subjectNameOption struct {
@@ -22,6 +21,6 @@ func WithoutSubjectName() InspectOption {
 	})
 }
 
-func (o *subjectNameOption) apply(cert *x509.Certificate, storing *certmetrics.Cert) {
+func (o *subjectNameOption) apply(cert *x509.Certificate, storing *collector.Cert) {
 	storing.Subject = o.namer(cert)
 }

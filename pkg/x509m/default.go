@@ -1,8 +1,10 @@
 package x509m
 
-import "github.com/artarts36/certmetrics"
+import (
+	"github.com/artarts36/certmetrics/pkg/collector"
+)
 
-var defaultInspector = NewInspector(certmetrics.DefaultCollector)
+var defaultInspector = NewInspector(collector.DefaultCollector)
 
 func Inspect(certBytes []byte, opts ...InspectOption) error {
 	return defaultInspector.Inspect(certBytes, opts...)

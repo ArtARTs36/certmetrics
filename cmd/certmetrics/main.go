@@ -14,8 +14,8 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"github.com/artarts36/certmetrics/exporter/internal"
-	"github.com/artarts36/certmetrics/exporter/internal/config"
+	"github.com/artarts36/certmetrics/internal"
+	"github.com/artarts36/certmetrics/internal/config"
 )
 
 var (

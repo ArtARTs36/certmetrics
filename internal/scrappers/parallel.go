@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/artarts36/certmetrics/exporter/internal/config"
+	"github.com/artarts36/certmetrics/internal/config"
 )
 
 type parallel struct {

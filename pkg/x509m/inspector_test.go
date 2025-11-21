@@ -2,12 +2,11 @@ package x509m
 
 import (
 	"fmt"
+	"github.com/artarts36/certmetrics/pkg/collector"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
-
-	"github.com/artarts36/certmetrics"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -24,11 +23,11 @@ func TestInspector_InspectPEMs(t *testing.T) {
 	tests := []struct {
 		Title    string
 		Cert     string
-		Expected []*certmetrics.Cert
+		Expected []*collector.Cert
 	}{
 		{
 			Title: "RU CA Inspect PEMs",
-			Expected: []*certmetrics.Cert{
+			Expected: []*collector.Cert{
 				{
 					Type:      "x509",
 					Subject:   "Russian Trusted Sub CA",
@@ -121,13 +120,13 @@ EYVMxjh8zNbFuoc7fzvvrFILLe7ifvEIUqSVIC/AzplM/Jxw7buXFeGP1qVCBEHq
 
 	for _, test := range tests {
 		t.Run(test.Title, func(t *testing.T) {
-			collector := certmetrics.NewMemoryCollector()
-			inspector := NewInspector(collector)
+			cl := collector.NewMemoryCollector()
+			inspector := NewInspector(cl)
 
 			err := inspector.InspectPEMs([]byte(test.Cert))
 			require.NoError(t, err)
 
-			assert.Equal(t, test.Expected, collector.Certs())
+			assert.Equal(t, test.Expected, cl.Certs())
 		})
 	}
 }

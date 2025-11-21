@@ -6,11 +6,11 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/artarts36/certmetrics/exporter/internal/storage"
+	"github.com/artarts36/certmetrics/internal/storage"
 
-	"github.com/artarts36/certmetrics/exporter/internal/config"
-	"github.com/artarts36/certmetrics/exporter/internal/metrics"
-	"github.com/artarts36/certmetrics/x509m"
+	"github.com/artarts36/certmetrics/internal/config"
+	"github.com/artarts36/certmetrics/internal/metrics"
+	"github.com/artarts36/certmetrics/pkg/x509m"
 )
 
 type X509Scrapper struct {

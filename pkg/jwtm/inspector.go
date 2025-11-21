@@ -2,19 +2,18 @@ package jwtm
 
 import (
 	"fmt"
+	"github.com/artarts36/certmetrics/pkg/collector"
 	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt"
-
-	"github.com/artarts36/certmetrics"
 )
 
 type Inspector struct {
-	collector certmetrics.Collector
+	collector collector.Collector
 }
 
-func NewInspector(collector certmetrics.Collector) *Inspector {
+func NewInspector(collector collector.Collector) *Inspector {
 	return &Inspector{
 		collector: collector,
 	}
@@ -37,8 +36,8 @@ func (i *Inspector) InspectClaims(claims map[string]interface{}, opts ...Inspect
 	i.collector.StoreCert(i.cert(claims, opts))
 }
 
-func (i *Inspector) cert(claims jwt.MapClaims, opts []InspectOption) *certmetrics.Cert {
-	cert := &certmetrics.Cert{
+func (i *Inspector) cert(claims jwt.MapClaims, opts []InspectOption) *collector.Cert {
+	cert := &collector.Cert{
 		Type: "jwt",
 	}
 

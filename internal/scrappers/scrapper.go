@@ -3,7 +3,7 @@ package scrappers
 import (
 	"context"
 
-	"github.com/artarts36/certmetrics/exporter/internal/config"
+	"github.com/artarts36/certmetrics/internal/config"
 )
 
 type Scrapper interface {

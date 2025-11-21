@@ -1,4 +1,4 @@
-package certmetrics
+package collector
 
 type MemoryCollector struct {
 	certs []*Cert
