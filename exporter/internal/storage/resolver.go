@@ -1,28 +1,33 @@
 package storage
 
 import (
-	"strings"
+	"regexp"
 )
 
 type Resolver struct {
-	prefixes map[string]Storage
-	def      Storage
+	rules []*ResolveRule
+	def   Storage
+}
+
+type ResolveRule struct {
+	Regex   *regexp.Regexp
+	Storage Storage
 }
 
 func NewResolver(
 	def Storage,
-	prefixes map[string]Storage,
+	rules []*ResolveRule,
 ) *Resolver {
 	return &Resolver{
-		prefixes: prefixes,
-		def:      def,
+		rules: rules,
+		def:   def,
 	}
 }
 
 func (r *Resolver) Resolve(path string) Storage {
-	for prefix, storage := range r.prefixes {
-		if strings.Contains(path, prefix) {
-			return storage
+	for _, rule := range r.rules {
+		if rule.Regex.MatchString(path) {
+			return rule.Storage
 		}
 	}
 

@@ -13,14 +13,14 @@ scrape:
 
   # Configuration for scrapping of x509 certificates.
   x509:
-    # List of pem certificates.
-    pems:
+    # List of files of certificates.
+    files:
       - # Label to metric.
         #
         # Optional, default: ""
-        id: aa
+        id: test-local-files
         # Path to file or regex.
-        # Examples: ./path/to/cert.pem, ./path/to/*.pem, https://domain.com/cert.pem, env://CERT
+        # Examples: ./path/to/cert.pem, ./path/to/*.pem, https://domain.com/cert.pem, env://CERT. https://domain.com
         # Required.
         path: ./*.pem
         # Options for inspect path.
@@ -31,3 +31,7 @@ scrape:
           # Available values: cn, none
           # Optional, default: "cn"
           subject: none
+      - id: test-ca
+        path: https://gu-st.ru/content/Other/doc/russiantrustedca.pem
+      - id: test-google.com
+        path: https://google.com

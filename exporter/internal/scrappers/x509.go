@@ -14,37 +14,44 @@ import (
 )
 
 type X509Scrapper struct {
-	metrics *metrics.ExporterMetrics
-	storage storage.Storage
+	metrics         *metrics.ExporterMetrics
+	storageResolver *storage.Resolver
 }
 
-func NewX509Scrapper(metr *metrics.ExporterMetrics, store storage.Storage) *X509Scrapper {
+type x509Task struct {
+	file  config.X509File
+	store storage.Storage
+}
+
+func NewX509Scrapper(metr *metrics.ExporterMetrics, store *storage.Resolver) *X509Scrapper {
 	return &X509Scrapper{
-		metrics: metr,
-		storage: store,
+		metrics:         metr,
+		storageResolver: store,
 	}
 }
 
 func (x *X509Scrapper) Scrape(ctx context.Context, cfg *config.ScrapeConfig) error {
-	queue := make(chan config.PEMFile)
+	queue := make(chan x509Task)
 	wg := &sync.WaitGroup{}
 
 	go func() {
-		for file := range queue {
-			err := x.scrape(ctx, file)
+		for task := range queue {
+			err := x.scrape(ctx, task.store, task.file)
 			if err != nil {
 				slog.
 					With(slog.Any("err", err)).
-					With(slog.String("file.id", file.ID)).
-					With(slog.String("file.path", file.Path)).
+					With(slog.String("file.id", task.file.ID)).
+					With(slog.String("file.path", task.file.Path)).
 					ErrorContext(ctx, "[x509] failed to scrape file")
 			}
 			wg.Done()
 		}
 	}()
 
-	for _, pem := range cfg.X509.PEMs {
-		files, err := x.storage.ListFiles(ctx, pem.Path)
+	for _, pem := range cfg.X509.Files {
+		store := x.storageResolver.Resolve(pem.Path)
+
+		files, err := store.ListFiles(ctx, pem.Path)
 		if err != nil {
 			slog.
 				With(slog.Any("err", err)).
@@ -64,10 +71,13 @@ func (x *X509Scrapper) Scrape(ctx context.Context, cfg *config.ScrapeConfig) err
 		wg.Add(len(files))
 
 		for _, file := range files {
-			queue <- config.PEMFile{
-				Path: file,
-				ID:   pem.ID,
-				Opts: pem.Opts,
+			queue <- x509Task{
+				file: config.X509File{
+					Path: file,
+					ID:   pem.ID,
+					Opts: pem.Opts,
+				},
+				store: store,
 			}
 		}
 	}
@@ -79,8 +89,8 @@ func (x *X509Scrapper) Scrape(ctx context.Context, cfg *config.ScrapeConfig) err
 	return nil
 }
 
-func (x *X509Scrapper) scrape(ctx context.Context, pem config.PEMFile) error {
-	file, err := x.storage.ReadFile(ctx, pem.Path)
+func (x *X509Scrapper) scrape(ctx context.Context, store storage.Storage, pem config.X509File) error {
+	file, err := store.ReadFile(ctx, pem.Path)
 	if err != nil {
 		return fmt.Errorf("read file: %w", err)
 	}
@@ -99,7 +109,9 @@ func (x *X509Scrapper) scrape(ctx context.Context, pem config.PEMFile) error {
 	}
 
 	if err = x509m.InspectPEMs(file, opts...); err != nil {
-		return fmt.Errorf("inspect: %w", err)
+		if terr := x509m.Inspect(file, opts...); terr != nil {
+			return fmt.Errorf("inspect: %w, inspest pems: %w", err, terr)
+		}
 	}
 
 	x.metrics.IncScrapings(id)

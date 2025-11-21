@@ -52,13 +52,13 @@ func defaults(cfg *Config) {
 		cfg.HTTP.Addr = ":8010"
 	}
 
-	if cfg.Scrape.Interval.Duration <= 0 {
-		cfg.Scrape.Interval = Duration{defaultInterval}
+	if cfg.Scrape.Interval.Value <= 0 {
+		cfg.Scrape.Interval.Value = defaultInterval
 	}
 }
 
 func validate(cfg *Config) error {
-	for i, pem := range cfg.Scrape.X509.PEMs {
+	for i, pem := range cfg.Scrape.X509.Files {
 		if pem.Path == "" {
 			return fmt.Errorf("scrape.x509.pems.%d.path required", i)
 		}
@@ -76,7 +76,7 @@ func validate(cfg *Config) error {
 }
 
 func injectEnv(cfg *Config) {
-	for _, pem := range cfg.Scrape.X509.PEMs {
+	for _, pem := range cfg.Scrape.X509.Files {
 		pem.Path = interpolateEnv(pem.Path)
 	}
 

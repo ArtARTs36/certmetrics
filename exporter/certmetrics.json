@@ -5,7 +5,7 @@
   "scrape": {
     "interval": "24h",
     "x509": {
-      "pems": [
+      "files": [
         {
           "id": "aa",
           "path": "./*.pem",
