@@ -3,10 +3,11 @@ package internal
 import (
 	"context"
 	"fmt"
-	"github.com/artarts36/certmetrics/pkg/collector"
 	"log/slog"
 	"regexp"
 	"time"
+
+	"github.com/artarts36/certmetrics/pkg/collector"
 
 	"github.com/prometheus/client_golang/prometheus"
 
