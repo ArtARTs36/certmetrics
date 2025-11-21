@@ -52,8 +52,8 @@ func defaults(cfg *Config) {
 		cfg.HTTP.Addr = ":8010"
 	}
 
-	if cfg.Scrape.Interval.Duration <= 0 {
-		cfg.Scrape.Interval = Duration{defaultInterval}
+	if cfg.Scrape.Interval.Value <= 0 {
+		cfg.Scrape.Interval.Value = defaultInterval
 	}
 }
 

@@ -7,7 +7,7 @@ lint:
 build-exporter:
 	docker build -f Dockerfile -t artarts36/certmetrics:local .
 
-run-exporter:
+run-exporter: build-exporter
 	docker run -v ./exporter:/app -p 8010:8010 artarts36/certmetrics:local
 
 check: test lint

@@ -1,5 +1,7 @@
 package config
 
+import "github.com/artarts36/specw"
+
 type Config struct {
 	HTTP struct {
 		Addr string `yaml:"addr" json:"addr"`
@@ -9,7 +11,7 @@ type Config struct {
 }
 
 type ScrapeConfig struct {
-	Interval Duration `yaml:"interval" json:"interval"`
+	Interval specw.Duration `yaml:"interval" json:"interval"`
 
 	X509 struct {
 		// Paths to .pem

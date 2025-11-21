@@ -83,7 +83,7 @@ func NewApp(cfg *config.Config, info AppInfo) (*App, error) {
 func (app *App) Run(ctx context.Context) {
 	app.scrape(ctx)
 
-	t := time.NewTicker(app.cfg.Scrape.Interval.Duration)
+	t := time.NewTicker(app.cfg.Scrape.Interval.Value)
 	for range t.C {
 		app.scrape(ctx)
 	}

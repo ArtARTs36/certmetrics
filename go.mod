@@ -1,6 +1,8 @@
 module github.com/artarts36/certmetrics
 
-go 1.23.3
+go 1.24.0
+
+toolchain go1.24.7
 
 require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
@@ -10,7 +12,9 @@ require (
 )
 
 require (
+	github.com/artarts36/specw v0.1.3 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/buildkite/interpolate v0.1.5 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
@@ -20,6 +24,7 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.62.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
+	golang.org/x/image v0.32.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	google.golang.org/protobuf v1.36.1 // indirect
 )
