@@ -4,7 +4,9 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
+	"log/slog"
 	"net/url"
 )
 
@@ -18,7 +20,7 @@ func NewDomain() *Domain {
 	}
 }
 
-func (h *Domain) ListFiles(_ context.Context, path string) ([]string, error) {
+func (h *Domain) ListFiles(ctx context.Context, path string) ([]string, error) {
 	uri, err := url.Parse(path)
 	if err != nil {
 		return nil, fmt.Errorf("parse path %q: %w", path, err)
@@ -31,12 +33,16 @@ func (h *Domain) ListFiles(_ context.Context, path string) ([]string, error) {
 
 	newPath := fmt.Sprintf("%s:%s", uri.Host, port)
 
-	conn, err := tls.Dial("tcp", newPath, &tls.Config{
-		InsecureSkipVerify: true, //nolint: gosec // not need
-	})
+	conn, err := h.dial(ctx, newPath)
 	if err != nil {
-		return nil, fmt.Errorf("tcp dial: %w", err)
+		return nil, fmt.Errorf("dial: %w", err)
 	}
+	defer func() {
+		err = conn.Close()
+		if err != nil {
+			slog.WarnContext(ctx, "error closing connection", slog.String("addr", newPath), slog.Any("err", err))
+		}
+	}()
 
 	certs := conn.ConnectionState().PeerCertificates
 
@@ -58,4 +64,25 @@ func (h *Domain) ReadFile(_ context.Context, path string) ([]byte, error) {
 	}
 
 	return cert.Raw, nil
+}
+
+func (h *Domain) dial(ctx context.Context, addr string) (*tls.Conn, error) {
+	dialer := tls.Dialer{
+		Config: &tls.Config{
+			InsecureSkipVerify: true, //nolint: gosec // not need
+		},
+	}
+
+	conn, err := dialer.DialContext(ctx, "tcp", addr)
+	if err != nil {
+		return nil, fmt.Errorf("tcp dial: %w", err)
+	}
+
+	tlsConn, ok := conn.(*tls.Conn)
+	if !ok {
+		slog.WarnContext(ctx, "error closing connection", slog.String("addr", addr), slog.Any("err", err))
+		return nil, errors.New("tcp conn does not implement tls.Conn")
+	}
+
+	return tlsConn, nil
 }
