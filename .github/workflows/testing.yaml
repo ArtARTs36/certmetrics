@@ -1,55 +1,75 @@
-name: Testing
+name: testing
 
 on:
   push:
-    branches:
-      - master
-  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: write
 
 jobs:
-  lint:
-    name: lint
+  detect-modules:
     runs-on: ubuntu-latest
+    outputs:
+      modules: ${{ steps.get-modules.outputs.modules }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
+      - name: Get GO modules
+        uses: ci-space/go-modules-action@v0.1.0
+        id: get-modules
+
+  code-lint:
+    name: code-lint
+    runs-on: ubuntu-latest
+    needs: detect-modules
+
+    strategy:
+      matrix:
+        module: ${{ fromJSON(needs.detect-modules.outputs.modules) }}
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
 
       - name: Set up Go
         uses: actions/setup-go@v4 # action page: <https://github.com/actions/setup-go>
         with:
           go-version: stable
+          cache-dependency-path: ${{ matrix.module.dir }}/go.sum
 
       - name: Install Go dependencies
-        run: go mod download
+        run: cd ${{ matrix.module.dir }} && go mod download
 
       - name: Run linter
-        uses: golangci/golangci-lint-action@v3.7.0
+        uses: golangci/golangci-lint-action@v7
         with:
-          version: v1.64.8 # without patch version
+          version: v2.3
           only-new-issues: false # show only new issues if it's a pull request
-          args: -v --build-tags=race --timeout=10m
+          args: -v --timeout=10m
 
-  test:
-    name: Unit tests
+  unit-test:
+    name: unit-test
     runs-on: ubuntu-latest
+    needs: detect-modules
+
+    strategy:
+      matrix:
+        module: ${{ fromJSON(needs.detect-modules.outputs.modules) }}
+
     steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v4 # action page: <https://github.com/actions/setup-go>
         with:
           go-version: stable
-
-      - name: Check out code
-        uses: actions/checkout@v3
-
-      - name: Init Go modules Cache # Docs: <https://git.io/JfAKn#go---modules>
-        uses: actions/cache@v3
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: ${{ runner.os }}-go-
+          cache-dependency-path: ${{ matrix.module.dir }}/go.sum
 
       - name: Install Go dependencies
-        run: go mod download
+        run: cd ${{ matrix.module.dir }} && go mod download
 
-      - name: Run Unit tests
-        run: go test ./...
+      - name: Run tests
+        run: cd ${{ matrix.module.dir }} && go test ./...
